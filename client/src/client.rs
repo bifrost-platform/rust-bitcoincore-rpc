@@ -1272,6 +1272,7 @@ pub trait RpcApi: Sized + Sync + Send {
     }
 }
 
+#[derive(Clone)]
 /// Client implements a JSON-RPC client for the Bitcoin Core daemon or compatible APIs.
 pub struct Client {
     client: reqwest::Client,
