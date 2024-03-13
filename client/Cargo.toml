@@ -5,6 +5,7 @@ authors = [
     "Steven Roose <steven@stevenroose.org>",
     "Jean Pierre Dudey <jeandudey@hotmail.com>",
     "Dawid Ciężarkiewicz <dpc@dpc.pw>",
+    "Minsung Kwon <kwonarseus@gmail.com"
 ]
 license = "CC0-1.0"
 homepage = "https://github.com/rust-bitcoin/rust-bitcoincore-rpc/"
@@ -19,10 +20,15 @@ name = "bitcoincore_rpc"
 path = "src/lib.rs"
 
 [dependencies]
+async-trait = "0.1.77"
 bitcoincore-rpc-json = { version = "0.18.0", path = "../json" }
 
 log = "0.4.5"
 jsonrpc = "0.14.0"
+reqwest = { version = "0.11.24", default-features = false, features = [
+    "rustls-tls",
+    "json",
+] }
 
 # Used for deserialization of JSON.
 serde = "1"

@@ -1407,8 +1407,6 @@ pub enum GetPeerInfoResultNetwork {
     Ipv4,
     Ipv6,
     Onion,
-    #[deprecated]
-    Unroutable,
     NotPubliclyRoutable,
     I2p,
     Cjdns,
