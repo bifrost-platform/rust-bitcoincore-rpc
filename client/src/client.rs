@@ -220,7 +220,7 @@ impl Auth {
 #[async_trait::async_trait]
 pub trait RpcApi: Sized + Sync + Send {
     /// Call a `cmd` rpc with given `args` list
-    async fn call<T: for<'a> serde::de::Deserialize<'a>>(
+    async fn call<T: for<'a> serde::de::Deserialize<'a> + Send>(
         &self,
         cmd: &str,
         args: &[serde_json::Value],
