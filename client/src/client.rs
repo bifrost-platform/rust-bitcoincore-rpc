@@ -29,6 +29,7 @@ use crate::bitcoin::{
 };
 use log::Level::Debug;
 use serde_json::value::RawValue;
+use bitcoincore_rpc_json::ListDescriptorsResult;
 
 use crate::error::*;
 use crate::json;
@@ -689,6 +690,11 @@ pub trait RpcApi: Sized + Sync + Send {
     async fn key_pool_refill(&self, new_size: Option<usize>) -> Result<()> {
         let mut args = [opt_into_json(new_size)?];
         self.call("keypoolrefill", handle_defaults(&mut args, &[null()])).await
+    }
+    
+    async fn list_descriptors(&self, private: Option<bool>) -> Result<ListDescriptorsResult> {
+        let mut args = [opt_into_json(private)?];
+        self.call("listdescriptors", handle_defaults(&mut args, &[false.into()])).await
     }
 
     async fn list_unspent(

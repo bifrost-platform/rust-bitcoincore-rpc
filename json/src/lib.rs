@@ -774,6 +774,19 @@ pub struct GetTxOutResult {
     pub coinbase: bool,
 }
 
+#[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize)]
+pub struct ListDescriptorsResult {
+    pub wallet_name: String,
+    pub descriptors: Vec<ListDescriptorResultEntryDescriptors>,
+}
+
+#[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize)]
+pub struct ListDescriptorResultEntryDescriptors {
+    pub desc: String,
+    pub timestamp: u64,
+    pub active: bool,
+}
+
 #[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ListUnspentQueryOptions {
