@@ -31,7 +31,6 @@ use crate::bitcoin::{
 };
 use log::Level::{Debug, Trace, Warn};
 use serde_json::value::RawValue;
-use bitcoincore_rpc_json::ListDescriptorsResult;
 
 use crate::error::*;
 use crate::json;
@@ -680,10 +679,13 @@ pub trait RpcApi: Sized + Sync + Send {
 
     async fn import_descriptors(
         &self,
-        req: json::ImportDescriptors,
+        requests: &[json::ImportDescriptors],
     ) -> Result<Vec<json::ImportMultiResult>> {
-        let json_request = vec![serde_json::to_value(req)?];
-        self.call("importdescriptors", handle_defaults(&mut [json_request.into()], &[null()])).await
+        let mut json_requests = Vec::with_capacity(requests.len());
+        for req in requests {
+            json_requests.push(serde_json::to_value(req)?);
+        }
+        self.call("importdescriptors", handle_defaults(&mut [json_requests.into()], &[null()])).await
     }
 
     async fn set_label(&self, address: &Address, label: &str) -> Result<()> {
@@ -694,8 +696,8 @@ pub trait RpcApi: Sized + Sync + Send {
         let mut args = [opt_into_json(new_size)?];
         self.call("keypoolrefill", handle_defaults(&mut args, &[null()])).await
     }
-    
-    async fn list_descriptors(&self, private: Option<bool>) -> Result<ListDescriptorsResult> {
+
+    async fn list_descriptors(&self, private: Option<bool>) -> Result<json::ListDescriptorsResult> {
         let mut args = [opt_into_json(private)?];
         self.call("listdescriptors", handle_defaults(&mut args, &[false.into()])).await
     }

@@ -1345,7 +1345,7 @@ pub struct ImportMultiResult {
     pub error: Option<ImportMultiResultError>,
 }
 
-/// A import request for importdescriptors.
+/// A import request for "importdescriptors".
 #[derive(Clone, PartialEq, Eq, Debug, Default, Deserialize, Serialize)]
 pub struct ImportDescriptors {
     #[serde(rename = "desc")]
