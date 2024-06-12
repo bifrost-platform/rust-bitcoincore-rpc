@@ -682,7 +682,8 @@ pub trait RpcApi: Sized + Sync + Send {
         for req in requests {
             json_requests.push(serde_json::to_value(req)?);
         }
-        self.call("importdescriptors", handle_defaults(&mut [json_requests.into()], &[null()])).await
+        self.call("importdescriptors", handle_defaults(&mut [json_requests.into()], &[null()]))
+            .await
     }
 
     async fn set_label(&self, address: &Address, label: &str) -> Result<()> {
@@ -1291,6 +1292,7 @@ pub trait RpcApi: Sized + Sync + Send {
 pub struct Client {
     client: reqwest::Client,
     url: reqwest::Url,
+    wallet: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -1320,7 +1322,7 @@ impl Client {
     /// Creates a client to a bitcoind JSON-RPC server.
     ///
     /// Can only return [Err] when using cookie authentication.
-    pub fn new(url: &str, auth: Auth) -> Result<Self> {
+    pub fn new(url: &str, auth: Auth, wallet: Option<String>) -> Result<Self> {
         let mut url = reqwest::Url::from_str(url).map_err(|_| Error::InvalidUrl)?;
 
         let (user, pass) = auth.get_user_pass()?;
@@ -1335,7 +1337,12 @@ impl Client {
         Ok(Self {
             client: reqwest::Client::new(),
             url,
+            wallet,
         })
+    }
+
+    pub fn set_wallet(&mut self, wallet: &str) {
+        self.wallet = Some(wallet.to_string());
     }
 
     pub fn build_request_body<'a>(method: &'a str, params: &'a [Box<RawValue>]) -> Request<'a> {
@@ -1369,9 +1376,14 @@ impl RpcApi for Client {
             debug!(target: "bitcoincore_rpc", "JSON-RPC request: {} {}", cmd, serde_json::Value::from(args));
         }
 
+        let mut url = self.url.clone();
+        if let Some(wallet) = &self.wallet {
+            url.set_path(&format!("wallet/{wallet}"));
+        }
+
         let resp = self
             .client
-            .post(self.url.clone())
+            .post(url)
             .json(&req_body)
             .send()
             .await
