@@ -9,11 +9,13 @@
 //
 
 use std::collections::HashMap;
+use std::fmt::Formatter;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::iter::FromIterator;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::Arc;
 use std::{fmt, result};
 
 use crate::{bitcoin, deserialize_hex};
@@ -29,6 +31,7 @@ use crate::bitcoin::{
 };
 use log::Level::Debug;
 use serde_json::value::RawValue;
+use tokio::sync::RwLock;
 
 use crate::error::*;
 use crate::json;
@@ -1287,12 +1290,26 @@ pub trait RpcApi: Sized + Sync + Send {
     }
 }
 
+struct WalletRef {
+    inner: Option<String>,
+}
+
+impl fmt::Display for WalletRef {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if let Some(wallet) = &self.inner {
+            write!(f, "wallet/{wallet}")
+        } else {
+            write!(f, "")
+        }
+    }
+}
+
 #[derive(Clone)]
 /// Client implements a JSON-RPC client for the Bitcoin Core daemon or compatible APIs.
 pub struct Client {
     client: reqwest::Client,
     url: reqwest::Url,
-    wallet: Option<String>,
+    wallet: Arc<RwLock<WalletRef>>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -1337,12 +1354,14 @@ impl Client {
         Ok(Self {
             client: reqwest::Client::new(),
             url,
-            wallet,
+            wallet: Arc::new(RwLock::new(WalletRef {
+                inner: wallet,
+            })),
         })
     }
 
-    pub fn set_wallet(&mut self, wallet: &str) {
-        self.wallet = Some(wallet.to_string());
+    pub async fn set_wallet(&mut self, wallet: &str) {
+        self.wallet.write().await.inner = Some(wallet.to_string());
     }
 
     pub fn build_request_body<'a>(method: &'a str, params: &'a [Box<RawValue>]) -> Request<'a> {
@@ -1377,9 +1396,7 @@ impl RpcApi for Client {
         }
 
         let mut url = self.url.clone();
-        if let Some(wallet) = &self.wallet {
-            url.set_path(&format!("wallet/{wallet}"));
-        }
+        url.set_path(&self.wallet.read().await.to_string());
 
         let resp = self
             .client
