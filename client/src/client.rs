@@ -1297,7 +1297,7 @@ struct WalletRef {
 impl fmt::Display for WalletRef {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if let Some(wallet) = &self.inner {
-            write!(f, "/wallet/{wallet}")
+            write!(f, "wallet/{wallet}")
         } else {
             write!(f, "")
         }
