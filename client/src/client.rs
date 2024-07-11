@@ -1297,7 +1297,7 @@ struct WalletRef {
 impl fmt::Display for WalletRef {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if let Some(wallet) = &self.inner {
-            write!(f, "wallet/{wallet}")
+            write!(f, "/wallet/{wallet}")
         } else {
             write!(f, "")
         }
@@ -1396,7 +1396,9 @@ impl RpcApi for Client {
         }
 
         let mut url = self.url.clone();
-        url.set_path(&self.wallet.read().await.to_string());
+        let mut path = self.url.path().to_string();
+        path.push_str(&self.wallet.read().await.to_string());
+        url.set_path(&path);
 
         let resp = self
             .client
