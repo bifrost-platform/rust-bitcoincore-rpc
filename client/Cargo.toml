@@ -21,7 +21,7 @@ path = "src/lib.rs"
 
 [dependencies]
 async-trait = "0.1.77"
-anyhow = "1.0.86"
+anyhow = "1.0.57"
 bitcoincore-rpc-json = { version = "0.18.0", path = "../json" }
 
 log = "0.4.5"
