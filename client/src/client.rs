@@ -16,6 +16,7 @@ use std::iter::FromIterator;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use std::{fmt, result};
 
 use crate::{bitcoin, deserialize_hex};
@@ -1403,6 +1404,7 @@ impl RpcApi for Client {
         let resp = self
             .client
             .post(url)
+            .timeout(Duration::from_secs(10))
             .json(&req_body)
             .send()
             .await
