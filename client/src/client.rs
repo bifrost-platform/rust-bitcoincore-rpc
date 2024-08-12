@@ -1413,10 +1413,10 @@ impl RpcApi for Client {
             .json(&req_body)
             .send()
             .await
-            .map_err(|e| Error::ReqwestError(e))?
+            .map_err(|e| Error::ReturnedError(e.to_string()))?
             .json::<Resp>()
             .await
-            .map_err(|e| Error::ReqwestError(e))?;
+            .map_err(|e| Error::ReturnedError(e.to_string()))?;
 
         if let Some(ref res) = resp.result {
             serde_json::from_str(res.get()).map_err(Error::Json)
