@@ -1416,7 +1416,7 @@ impl RpcApi for Client {
             .map_err(|e| Error::ReqwestError(e))?
             .json::<Resp>()
             .await
-            .map_err(|e| Error::ReqwestError(e))?;
+            .map_err(|e| Error::ReturnedError(e.to_string()))?;
 
         if let Some(ref res) = resp.result {
             serde_json::from_str(res.get()).map_err(Error::Json)
