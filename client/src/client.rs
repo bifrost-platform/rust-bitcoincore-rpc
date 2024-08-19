@@ -21,7 +21,6 @@ use std::{fmt, result};
 
 use crate::{bitcoin, deserialize_hex};
 use bitcoin::hex::DisplayHex;
-use reqwest::Response;
 use serde;
 use serde_json;
 
@@ -1414,13 +1413,10 @@ impl RpcApi for Client {
             .json(&req_body)
             .send()
             .await
-            .and_then(Response::error_for_status)
-            .map_err(|e| Error::ReturnedError(format!("{:?}:{}", e.status(), e.to_string())))?
+            .map_err(|e| Error::ReqwestError(e))?
             .json::<Resp>()
             .await
-            .map_err(|e| {
-                Error::ReturnedError(format!("JSON Deserialization error: {}", e.to_string()))
-            })?;
+            .map_err(|e| Error::ReqwestError(e))?;
 
         if let Some(ref res) = resp.result {
             serde_json::from_str(res.get()).map_err(Error::Json)
