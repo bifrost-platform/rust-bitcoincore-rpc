@@ -1408,24 +1408,19 @@ impl RpcApi for Client {
         path.push_str(&self.wallet.read().await.to_string());
         url.set_path(&path);
 
-        let raw_resp = self
+        let resp = self
             .client
             .post(url)
             .json(&req_body)
             .send()
             .await
             .and_then(Response::error_for_status)
-            .map_err(|e| Error::ReturnedError(format!("{:?}:{}", e.status(), e.to_string())))?;
-
-        info!(target: "bitcoincore_rpc", "Raw response: {:?}-{}-{:?}", raw_resp, raw_resp.status(), raw_resp.headers());
-
-        let resp = raw_resp.json::<Resp>().await.map_err(|e| {
-            Error::ReturnedError(format!(
-                "JSON Deserialization error: {:?}-{}",
-                e.status(),
-                e.to_string(),
-            ))
-        })?;
+            .map_err(|e| Error::ReturnedError(format!("{:?}:{}", e.status(), e.to_string())))?
+            .json::<Resp>()
+            .await
+            .map_err(|e| {
+                Error::ReturnedError(format!("JSON Deserialization error: {}", e.to_string()))
+            })?;
 
         if let Some(ref res) = resp.result {
             serde_json::from_str(res.get()).map_err(Error::Json)
