@@ -16,6 +16,7 @@ use std::iter::FromIterator;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use std::{fmt, result};
 
 use crate::{bitcoin, deserialize_hex};
@@ -1339,8 +1340,14 @@ impl Client {
     /// Creates a client to a bitcoind JSON-RPC server.
     ///
     /// Can only return [Err] when using cookie authentication.
-    pub fn new(url: &str, auth: Auth, wallet: Option<String>) -> Result<Self> {
+    pub fn new(
+        url: &str,
+        auth: Auth,
+        wallet: Option<String>,
+        timeout: Option<u64>,
+    ) -> Result<Self> {
         let mut url = reqwest::Url::from_str(url).map_err(|_| Error::InvalidUrl)?;
+        let secs = timeout.unwrap_or(10);
 
         let (user, pass) = auth.get_user_pass()?;
         match (user, pass) {
@@ -1352,7 +1359,7 @@ impl Client {
         }
 
         Ok(Self {
-            client: reqwest::Client::new(),
+            client: reqwest::Client::builder().timeout(Duration::from_secs(secs)).build().unwrap(),
             url,
             wallet: Arc::new(RwLock::new(WalletRef {
                 inner: wallet,
