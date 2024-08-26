@@ -1347,7 +1347,12 @@ impl Client {
         timeout: Option<u64>,
     ) -> Result<Self> {
         let mut url = reqwest::Url::from_str(url).map_err(|_| Error::InvalidUrl)?;
-        let secs = timeout.unwrap_or(10);
+
+        let client = if let Some(secs) = timeout {
+            reqwest::Client::builder().timeout(Duration::from_secs(secs)).build().unwrap()
+        } else {
+            reqwest::Client::builder().build().unwrap()
+        };
 
         let (user, pass) = auth.get_user_pass()?;
         match (user, pass) {
@@ -1359,7 +1364,7 @@ impl Client {
         }
 
         Ok(Self {
-            client: reqwest::Client::builder().timeout(Duration::from_secs(secs)).build().unwrap(),
+            client,
             url,
             wallet: Arc::new(RwLock::new(WalletRef {
                 inner: wallet,
