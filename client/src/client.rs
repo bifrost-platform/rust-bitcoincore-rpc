@@ -1406,7 +1406,7 @@ impl Client {
         Request {
             method,
             params,
-            jsonrpc: Some("2.0"),
+            jsonrpc: Some("1.0"),
         }
     }
 }
