@@ -22,23 +22,21 @@ use std::{fmt, result};
 use crate::bitcoin;
 use crate::bitcoin::consensus::encode;
 use bitcoin::hex::DisplayHex;
-use jsonrpc;
 use serde;
 use serde_json;
 
-use crate::bitcoin::address::{NetworkUnchecked, NetworkChecked};
+use crate::bitcoin::address::{NetworkChecked, NetworkUnchecked};
 use crate::bitcoin::hashes::hex::FromHex;
 use crate::bitcoin::secp256k1::ecdsa::Signature;
 use crate::bitcoin::{
     Address, Amount, Block, OutPoint, PrivateKey, PublicKey, Script, Transaction,
 };
-use log::Level::{Debug, Trace, Warn};
+use log::Level::Debug;
 use serde_json::value::RawValue;
 use tokio::sync::RwLock;
 
 use crate::error::*;
 use crate::json;
-use crate::queryable;
 
 /// Crate-specific Result type, shorthand for `std::result::Result` with our
 /// crate-specific Error type;
@@ -858,7 +856,7 @@ pub trait RpcApi: Sized + Sync + Send {
         self.call("signrawtransaction", handle_defaults(&mut args, &defaults)).await
     }
 
-    async fn sign_raw_transaction_with_wallet<R: RawTx>(
+    async fn sign_raw_transaction_with_wallet<R: RawTx + Send>(
         &self,
         tx: R,
         utxos: Option<&[json::SignRawTransactionInput]>,

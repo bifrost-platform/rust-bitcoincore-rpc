@@ -48,7 +48,7 @@ impl RpcApi for RetryClient {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let client = RetryClient {
-        client: Client::new("", Auth::None, None)?,
+        client: Client::new("", Auth::None, None, None)?,
     };
 
     println!("{:?}", client.get_block_count().await);
